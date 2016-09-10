@@ -13,27 +13,34 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
 	if(err) throw err;
-	console.log("Connected as ID: " + connection.threadId);
-});
+		console.log("Connected as ID: " + connection.threadId);
+	});
 
-//Select all Products
-connection.query('SELECT * FROM Products', function(err, res) {
-	if (err) throw err;
 
-	console.log("~~~~Welcome to Bamazon!~~~~");
+function main(){
+	//Select all Products
+	connection.query('SELECT * FROM Products', function(err, res) {
+		if(err) throw err;
+		console.log(" ");
+		console.log("~~~~Welcome to Bamazon!~~~~");
+		console.log("Where shopping is BA-MAZING!");
+		console.log(" ");
 
-	//Loop to display all items
-	for (var i = 0; i < res.length; i++){
+		//Loop to display all items
+		for (var i = 0; i < res.length; i++){
 
-	console.log(res[i].ItemID + " " + "'" + res[i].ProductName + "'" + " " + res[i].DepartmentName + " $" + res[i].Price + " x" + res[i].StockQuantity);	
-	}
+		console.log(res[i].ItemID + " " + "'" + res[i].ProductName + "'" + " " + res[i].DepartmentName + " $" + res[i].Price + " x" + res[i].StockQuantity);	
+		}
 
-	//Get user info
-	buy();
-});
+		console.log(" ");
+
+		//Get user info
+		select();
+	});
+}
 
 //Prompt user what they would like to buy
-function buy(){
+function select(){
 	
 	inquirer.prompt([{
 	        name: "id",
@@ -49,13 +56,15 @@ function buy(){
 	    	var numSelect = answers.units;
 
 	    	//Go to itemCheck
-	    	itemCheck(itemSelect, numSelect);
+	    	stockCheck(itemSelect, numSelect);
 	    });
 	    
 }
 
 //See if enough items are in stock to fulfill order
-function itemCheck(itemSelect, numSelect){
+function stockCheck(itemSelect, numSelect){
+
+	console.log("In stockCheck");
 
 	//Connect to DB to look at all Products
 	connection.query('SELECT * FROM Products', function(err, res) {
@@ -64,26 +73,45 @@ function itemCheck(itemSelect, numSelect){
 			//Loop through all items
 			for (var i = 0; i < res.length; i++){
 				
-
+				//Find the itemID user selected
 				if(itemSelect == res[i].ItemID)
-					console.log(res[i].ProductName);
+					
+					//Set the current stock
+					var currentStock = res[i].StockQuantity;
+
 				}
 
+				//If user requested more than in stock
+				if (numSelect > currentStock){
+					console.log("Insufficient quantity!");
+
+					//Go back to main
+					main();
+				}
+				else {
+
+					console.log("Subtracted " + numSelect);
+						
+				}
+					
+			//Move to cashOut
+			cashOut(numselect);
 		});
 }
-       
-//        if (answers.post === "post"){
-//       	post();
-//    }
-//    else {
-//       bid();
-//    }
-        
-//     })
-// function display(){
 
-// 	connection.query('SELECT * FROM Products', function(err, res) {
-// 		if(err) throw err;
-// 		console.log(res);
-// 	});
-// }
+//Update DB to reflect change in stock, show price
+function cashOut(numselect){
+
+console.log("In cashOut");
+//Grab item price * numselect;
+
+	// connection.query("UPDATE products SET ? WHERE ?", [{
+// 	quantity: 100
+// }, {
+// 	flavor: "Rocky Road"
+// }], function(err, res) {});
+
+}
+
+//Start the app       
+main();
