@@ -2,7 +2,7 @@
 var mysql = require('mysql');
 var inquirer = require('inquirer');
 
-//mySql connection
+//MySql connection
 var connection = mysql.createConnection({
 	host: "localhost",
 	port: 3306,
@@ -14,17 +14,16 @@ var connection = mysql.createConnection({
 connection.connect(function(err) {
 	if(err) throw err;
 		console.log("Connected as ID: " + connection.threadId);
-	});
+});
 
-
+//Main menu
 function main(){
-	//Select all Products
+
+	//Select all products and display them
 	connection.query('SELECT * FROM Products', function(err, res) {
 		if(err) throw err;
-		console.log(" ");
-		console.log("~~~~Welcome to Bamazon!~~~~");
-		console.log("Where shopping is BA-MAZING!");
-		console.log(" ");
+	
+		console.log("\n~~~~Welcome to Bamazon!~~~~\nWhere shopping is BA-MAZING!\n");
 
 		//Loop to display all items
 		for (var i = 0; i < res.length; i++){
@@ -64,53 +63,58 @@ function select(){
 //See if enough items are in stock to fulfill order
 function stockCheck(itemSelect, numSelect){
 
-	console.log("In stockCheck");
-
 	//Connect to DB to look at all Products
 	connection.query('SELECT * FROM Products', function(err, res) {
 		if(err) throw err;
 		
 			//Loop through all items
 			for (var i = 0; i < res.length; i++){
+
+				
 				
 				//Find the itemID user selected
-				if(itemSelect == res[i].ItemID)
+				if(itemSelect == res[i].ItemID){
 					
 					//Set the current stock
 					var currentStock = res[i].StockQuantity;
+					console.log(currentStock);
 
+					//ID the product selected
+					var product = res[itemSelect - 1].ProductName;
+
+					//ID the price
+					var price = res[itemSelect - 1].Price;
+
+						//If user requested more than in stock
+						if (numSelect > currentStock){
+							console.log(" ");
+							console.log("Insufficient quantity!");
+							console.log(" ");
+
+							//Try again! Maybe this time pay attention to how much they have! Huh? Did you think of that? #sorrynotsorry
+							main();
+						}
+						else {
+
+							//Take from currentStock and assign to stockUpdate
+							var stockUpdate = currentStock - numSelect;
+
+							//Update DB with change in stock
+							connection.query("UPDATE products SET ? WHERE ?", [{StockQuantity: stockUpdate},
+							{ItemID: itemSelect}], function(err, res){});
+
+							//Set the total cost
+							var total = price * numSelect;
+
+							console.log("Thank you for purchasing " + "'" + product + "'! Your total comes to $" + total + ".");
+
+							//Go back to main
+							main();
+						}
+
+					}
 				}
-
-				//If user requested more than in stock
-				if (numSelect > currentStock){
-					console.log("Insufficient quantity!");
-
-					//Go back to main
-					main();
-				}
-				else {
-
-					console.log("Subtracted " + numSelect);
-						
-				}
-					
-			//Move to cashOut
-			cashOut(numselect);
 		});
-}
-
-//Update DB to reflect change in stock, show price
-function cashOut(numselect){
-
-console.log("In cashOut");
-//Grab item price * numselect;
-
-	// connection.query("UPDATE products SET ? WHERE ?", [{
-// 	quantity: 100
-// }, {
-// 	flavor: "Rocky Road"
-// }], function(err, res) {});
-
 }
 
 //Start the app       
