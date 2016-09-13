@@ -87,9 +87,8 @@ function stockCheck(itemSelect, numSelect){
 
 						//If user requested more than in stock
 						if (numSelect > currentStock){
-							console.log(" ");
-							console.log("Insufficient quantity!");
-							console.log(" ");
+							
+							console.log("\nInsufficient quantity!\n");
 
 							//Try again! Maybe this time pay attention to how much they have! Huh? Did you think of that? #sorrynotsorry
 							main();
